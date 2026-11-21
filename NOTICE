@@ -1,0 +1,8 @@
+HobbyLM-Embed
+Copyright 2026 the HobbyLM-Embed authors (Hariharan M. S., Prabhurajhan R.)
+
+This product includes code derived from HobbyLM (https://github.com/fuellabs-ai/hobbylm-1b),
+Copyright 2026 the HobbyLM authors (Harish, Hariharan, Prabhurajhan), licensed under Apache-2.0.
+The model architecture is described in "HobbyLM" (arXiv:2610.34582).
+
+The scripts in gguf/ are licensed under the MIT License.

@@ -1,0 +1,8 @@
+# Tested set (CPU): the examples and tests in this repository were run with these versions.
+torch==2.15.0
+transformers==5.23.0
+sentence-transformers==6.3.0
+tokenizers==0.23.3
+safetensors==0.8.0
+huggingface_hub==2.4.0
+numpy==2.5.5
