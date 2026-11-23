@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 """HobbyLM-Embed (harims95/hobbylm-embed-140m) in MLX.
 
-Mirrors ref/modeling_hobbylm.py: 12 pre-norm blocks, bidirectional GQA (8 q heads, 2 kv heads, head dim 64) with
+Mirrors hobbylm_hf/modeling_hobbylm.py: 12 pre-norm blocks, bidirectional GQA (8 q heads, 2 kv heads, head dim 64) with
 QK RMSNorm and rotate-half RoPE, block 0 dense SwiGLU, blocks 1-11 sparse MoE (32 SwiGLU experts, top-8, fp32
 sigmoid router, selection bias used for selection only, weights not renormalised), final RMSNorm, mean pooling over
 text tokens (padding and final EOT excluded) in float32, then L2 normalisation.
