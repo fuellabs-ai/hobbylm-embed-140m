@@ -80,9 +80,7 @@ Output:
 | F16 (335 MB) | 0.999974 | 0.998881 |
 | Q8_0 (179 MB) | 0.999435 | 0.995988 |
 
-Ollama (`num_ctx 512`): works, but its pooling includes the final end-of-text token, so vectors are close to but not
-identical with the reference model (task scores within ±0.4 on our checks). Don't mix Ollama vectors with exact vectors
-in one index.
+Ollama (`num_ctx 512`): works. Ollama's pooling includes the final end-of-text token, so its vectors are close to but not identical with the reference model: on normal sentences cosine is about 0.99 and task scores stay within ±0.4, but very short texts (one or two words) differ most (cosine about 0.92-0.97). Don't mix Ollama vectors with exact vectors in one index; for exact embeddings use Sentence Transformers or the llama.cpp helper.
 
 LM Studio and llama.cpp's own `--pooling mean`: not supported yet: their mean pooling includes the final end-of-text
 token, which this model excludes.

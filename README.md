@@ -167,7 +167,7 @@ curl http://localhost:11434/api/embed -d '{
 
 The response holds one 512-d, L2-normalised vector per input under `"embeddings"`. As with the other runtimes, prefix retrieval queries with `query: ` and documents with `passage: `, and use plain text for similarity, clustering and classification. The model runs with `num_ctx 512`.
 
-Ollama's pooling includes the final end-of-text token, so vectors are close to but not identical with the reference model (task scores within ±0.4 on our checks). Don't mix Ollama vectors with exact vectors in one index.
+Ollama's pooling includes the final end-of-text token, so its vectors are close to but not identical with the reference model: on normal sentences cosine is about 0.99 and task scores stay within ±0.4, but very short texts (one or two words) differ most (cosine about 0.92-0.97). Don't mix Ollama vectors with exact vectors in one index; for exact embeddings use Sentence Transformers or the llama.cpp helper.
 
 ## Integrations
 
