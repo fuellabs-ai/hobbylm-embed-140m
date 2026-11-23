@@ -41,7 +41,8 @@ pip install -U sentence-transformers
 ```python
 from sentence_transformers import SentenceTransformer
 
-model = SentenceTransformer("harims95/hobbylm-embed-140m", trust_remote_code=True)
+model = SentenceTransformer("harims95/hobbylm-embed-140m", revision="ea708cee107818fa0c1871eebd26d82a1e3fb1aa",
+                            trust_remote_code=True)
 
 queries = ["how do vaccines work?"]
 passages = [
@@ -119,7 +120,7 @@ Officially on MTEB: both the model entry and the results are merged into MTEB.
 
 In a **23 November 2026** comparison of **50 scored open-weight text-embedding models with at most 40M active parameters (excluding embeddings)**, HobbyLM-Embed-140M ranks **8 by MTEB(eng, v2) Mean (Task)**, at **62.33**. This is an active-parameter comparison; HobbyLM-Embed has **140M total parameters**.
 
-The cohort includes models with at most 600M total parameters, known total and non-embedding active counts, and complete results across all 41 English v2 tasks. Ranking uses the published MTEB result revisions with the registered revision preferred. The result is official; the model card reports **36% zero-shot** for HobbyLM-Embed.
+The cohort includes models with at most 600M total parameters, known total and non-embedding active counts, and complete results across all 41 English v2 tasks. Ranking uses the published MTEB result revisions with the registered revision preferred. Officially on MTEB; the model card reports **36% zero-shot** for HobbyLM-Embed.
 
 <p><img src="assets/embed-active40-rank-2026-11-23.png" width="100%" alt="MTEB English v2 comparison for models with at most 40M non-embedding active parameters. HobbyLM-Embed, 140M total and 36M active, ranks 8 of 50 scored models at 62.33. The seven higher-scoring models are shown with their total parameter counts."></p>
 
@@ -433,19 +434,14 @@ The architecture was designed by Harish Santhanalakshmi Ganesan for the HobbyLM 
 
 ## Training
 
-<picture>
-  <source media="(max-width: 640px)" srcset="https://raw.githubusercontent.com/fuellabs-ai/hobbylm-embed-140m/main/assets/embed-training-mobile.png">
-  <img src="assets/embed-training.png" width="100%" alt="Three stages: masked-token pretraining, contrastive pair training and supervised fine-tuning. Stage widths do not represent duration or data volume.">
-</picture>
-
-
-Three stages, each starting from the previous one's weights. Data sources are described by type; mixtures, preparation details and training code are not released.
+Four stages, each starting from the previous one's weights. Data sources are described by type; mixtures, preparation details and training code are not released.
 
 | Stage | What it teaches | Data |
 |---|---|---|
 | 1. Masked-token pretraining | Language, from random weights (50B tokens, sequences up to 1,024) | Filtered web text, educational and scientific documents, Wikipedia, StackExchange, synthetic question–answer text and code; deduplicated and decontaminated against the MTEB(eng, v2) test sets |
 | 2. Contrastive pair training | What "related" means (about 20M pairs) | Public question–answer, title–body, paraphrase and citation pairs |
-| 3. Supervised fine-tuning | Task skills, with teacher-mined hard negatives | Public labelled data for retrieval, NLI, paraphrase, classification and clustering, including MTEB training splits; synthetic training triplets |
+| 3. Distillation (short) | Light alignment to larger embedding models | Teacher-scored public texts |
+| 4. Supervised fine-tuning | Task skills, with teacher-mined hard negatives | Public labelled data for retrieval, NLI, paraphrase, classification and clustering, including MTEB training splits; synthetic training triplets |
 
 What mattered most:
 - **Measuring correctly.** Scoring in fp32 and averaging clustering over several seeds removed noise that was larger than the effects we were testing.
