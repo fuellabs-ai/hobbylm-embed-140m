@@ -1,6 +1,6 @@
 # HobbyLM-Embed-140M
 
-An English text-embedding model built on a sparse mixture-of-experts encoder: **140M total parameters, 36M active per token** (excluding embeddings, the MTEB convention). It produces dense 512-dimensional embeddings for search, retrieval-augmented generation (RAG), similarity, clustering and classification.
+An English text-embedding model built on a sparse mixture-of-experts encoder, trained from scratch: **140M total parameters, 36M active per token** (excluding embeddings, the MTEB convention). It produces dense 512-dimensional embeddings for search, retrieval-augmented generation (RAG), similarity, clustering and classification.
 
 This repository holds the inference code: the model code, examples, the GGUF converter and llama.cpp helper, and offline tests. Training code and data are not included.
 
@@ -11,7 +11,7 @@ This repository holds the inference code: the model code, examples, the GGUF con
 | GGUF (llama.cpp) | [harims95/hobbylm-embed-140m-gguf](https://huggingface.co/harims95/hobbylm-embed-140m-gguf) |
 | MLX (Apple Silicon, float16) | [harims95/hobbylm-embed-140m-mlx](https://huggingface.co/harims95/hobbylm-embed-140m-mlx) |
 | MTEB | [model entry](https://github.com/embeddings-benchmark/mteb/pull/5967) · [results](https://github.com/embeddings-benchmark/results/pull/858) (both merged) |
-| Paper | [Zenodo DOI](https://doi.org/ZENODO-DOI) <!-- TODO: reserved DOI --> |
+<!-- 7 pm: add | Paper | [Zenodo DOI](https://doi.org/<real DOI>) | here -->
 | Licence | Apache-2.0 (gguf/ scripts: MIT, see [NOTICE](NOTICE)) |
 
 ## Repository layout
@@ -89,6 +89,7 @@ The examples pin the model to a fixed revision ([`examples/_load.py`](examples/_
 
 **MTEB(eng, v2), all 41 tasks:** **62.33** Mean (Task), **57.62** Mean (TaskType).
 Scored with `mteb` 2.27.18, fp32, max length 512, through the official MTEB loader at model revision `ff263c85`.
+Officially on MTEB: both the model entry and the results are merged into MTEB.
 
 | Task type (tasks) | Score |
 |---|---:|
@@ -125,6 +126,8 @@ LongEmbed retrieval (mteb 2.27.18, nDCG@10), same weights:
 In synthetic long-document tests (LongEmbed passkey and needle, 2,048-token documents), accuracy improved from 22% to 96% (passkey) and 24% to 82% (needle) going from 512 to 2,048 tokens; at 512 the model only sees facts in the first 512 tokens.
 
 On MTEB(eng, v2) the 40-task mean is unchanged at 2,048 (63.16 -> 63.14); long-text similarity (STS22) drops 1.7 points.
+
+The final fine-tuning stage used inputs of at most 256 tokens; lengths beyond 2,048 are not tested.
 
 ## What it does
 
@@ -289,21 +292,29 @@ The architecture was designed by Harish Santhanalakshmi Ganesan for the HobbyLM 
 
 ## Training
 
-Trained from random initialisation in four stages:
-1. **Masked-token pretraining** on 50B tokens of public web, educational, scientific, encyclopedic, Q&A and code text, decontaminated against MTEB(eng, v2).
-2. **Contrastive pair training** on about 20M public text pairs.
-3. **Distillation** from larger embedding models.
-4. **Supervised fine-tuning** with mined hard negatives on public labelled data, including MTEB training splits.
+Four stages, each starting from the previous one's weights. Data sources are described by type; mixtures, preparation details and training code are not released.
 
-Training data, mixtures and code are not released.
+| Stage | What it teaches | Data |
+|---|---|---|
+| 1. Masked-token pretraining | Language, from random weights (50B tokens, sequences up to 1,024) | Filtered web text, educational and scientific documents, Wikipedia, StackExchange, synthetic question–answer text and code; deduplicated and decontaminated against the MTEB(eng, v2) test sets |
+| 2. Contrastive pair training | What "related" means (about 20M pairs) | Public question–answer, title–body, paraphrase and citation pairs |
+| 3. Distillation | Similarity judgements of larger embedding models | Public texts scored by teacher embedding models |
+| 4. Supervised fine-tuning | Task skills, with teacher-mined hard negatives | Public labelled data for retrieval, NLI, paraphrase, classification and clustering, including MTEB training splits; synthetic training triplets |
+
+What mattered most:
+- **Measuring correctly.** Scoring in fp32 and averaging clustering over several seeds removed noise that was larger than the effects we were testing.
+- **Matching training and use.** Short prompts the model saw in training help; long unseen instructions hurt a mean-pooled model.
+- **Choosing data by measurement.** Testing pair sources one at a time showed that some popular sources made out-of-domain retrieval worse.
 
 ## Licence
 
-Apache-2.0 for the weights and model code ([LICENSE](LICENSE)). The scripts in `gguf/` are MIT ([NOTICE](NOTICE)). Third-party training data remains under its own licences.
+Apache-2.0 for the weights and model code ([LICENSE](LICENSE)). The scripts in `gguf/` are MIT ([NOTICE](NOTICE)). The MLX port in `mlx/` is Apache-2.0.
+
+The model was trained on public datasets and on text generated by openly licensed models. Training data is not redistributed with this model, and third-party data remains under its own licences.
 
 ## Team
 
-Hariharan M. S., Prabhurajhan R.
+Built at Fuel Labs by Hariharan M. S. and Prabhurajhan R.
 
 We thank Jarvis Labs for providing the compute for this work.
 
@@ -311,10 +322,10 @@ We thank Jarvis Labs for providing the compute for this work.
 
 ```bibtex
 @misc{hobbylmembed2026,
-  title  = {HobbyLM-Embed: A Sparse Mixture-of-Experts Text Embedding Model on a Hobby Budget},
+  title  = {HobbyLM-Embed: Training a Sparse Mixture-of-Experts Text Embedding Model from Scratch},
   author = {Hariharan M. S. and Prabhurajhan R.},
   year   = {2026},
   url    = {https://huggingface.co/harims95/hobbylm-embed-140m}
 }
 ```
-<!-- TODO: replace with the arXiv entry once published -->
+<!-- 7 pm: add   doi    = {<real DOI>},  to the citation -->
