@@ -19,6 +19,7 @@ This repository holds the inference code: the model code, examples, the GGUF con
 hobbylm_hf/        model code, byte-identical to the files shipped with the weights (SHA256SUMS.txt)
 examples/          quickstart (encode_query / encode_document), semantic search, plain-text similarity
 gguf/              GGUF converter, llama.cpp helper (exact pooling) and RUN-LOCALLY.md
+mlx/               MLX port for Apple Silicon, with its check against Sentence Transformers
 tests/             offline tests: code hashes, pooling contract, example outputs vs stored reference vectors
 requirements.txt   tested versions (CPU)
 LICENSE, NOTICE
@@ -138,12 +139,24 @@ The model is English-only.
 |---|---|
 | Sentence Transformers (Python) | ✅ tested ([examples/](examples/)) |
 | Hugging Face Transformers | see the examples in the GitHub repo |
+| MLX on Apple Silicon (float16) | ✅ tested: matches Sentence Transformers (see [Running on Mac (MLX)](#running-on-mac-mlx)) |
 | llama.cpp (GGUF F16 / Q8_0) | ✅ tested: exact with `--pooling none` + our helper script ([gguf/RUN-LOCALLY.md](gguf/RUN-LOCALLY.md)) |
 | Ollama (Q8_0) | ✅ tested: close to the reference model, not identical (see [Ollama](#ollama)) |
 | LM Studio | not supported yet: its mean pooling includes the final end-of-text token, which this model excludes |
 | LangChain / LlamaIndex / Chroma | ✅ tested (see [Integrations](#integrations)) |
 
 CPU works. The reference implementation loops over experts in Python, so large batches are much faster than many small ones.
+
+### Running on Mac (MLX)
+
+```python
+import sys; from huggingface_hub import snapshot_download
+path = snapshot_download("harims95/hobbylm-embed-140m-mlx"); sys.path.insert(0, path)
+from hobbylm_mlx import Encoder
+q = Encoder(path, quant_dir=path).encode(["how do vaccines work?"], prompt_name="query")   # (1, 512)
+```
+
+Weights: [harims95/hobbylm-embed-140m-mlx](https://huggingface.co/harims95/hobbylm-embed-140m-mlx) (float16). Needs `pip install mlx tokenizers numpy huggingface_hub`. Tested on Apple M4 (macOS 15.5, mlx 0.32.4): float32 cosine 1.00000000 vs Sentence Transformers, float16 lowest 0.99965. Details, longer usage and the check scripts: [mlx/](mlx/).
 
 ### GGUF / llama.cpp
 

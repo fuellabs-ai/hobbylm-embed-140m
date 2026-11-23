@@ -1,0 +1,5 @@
+# Runtime: everything needed to use the MLX port (no torch)
+mlx==0.32.4
+tokenizers==0.23.3
+numpy==2.5.5
+huggingface_hub==2.4.0
