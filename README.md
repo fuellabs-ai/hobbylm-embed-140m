@@ -1,3 +1,8 @@
+<picture>
+  <source media="(max-width: 640px)" srcset="https://raw.githubusercontent.com/fuellabs-ai/hobbylm-embed-140m/main/assets/embed-banner-mobile.png">
+  <img src="assets/embed-banner.png" width="100%" alt="HobbyLM-Embed-140M by Fuel Labs. English sparse MoE text embeddings: 140M total parameters, 36M active per token excluding embeddings, 512-dimensional dense output.">
+</picture>
+
 # HobbyLM-Embed-140M
 
 An English text-embedding model built on a sparse mixture-of-experts encoder, trained from scratch: **140M total parameters, 36M active per token** (excluding embeddings, the MTEB convention). It produces dense 512-dimensional embeddings for search, retrieval-augmented generation (RAG), similarity, clustering and classification.
@@ -87,6 +92,12 @@ The examples pin the model to a fixed revision ([`examples/_load.py`](examples/_
 
 ## Measured results
 
+<picture>
+  <source media="(max-width: 640px)" srcset="https://raw.githubusercontent.com/fuellabs-ai/hobbylm-embed-140m/main/assets/embed-benchmarks-mobile.png">
+  <img src="assets/embed-benchmarks.png" width="100%" alt="MTEB English v2: 62.33 Mean (Task) and 57.62 Mean (TaskType), across all 41 tasks. Evaluated in fp32 at 512 tokens with mteb 2.27.18. Category bars share a 0 to 100 scale.">
+</picture>
+
+
 **MTEB(eng, v2), all 41 tasks:** **62.33** Mean (Task), **57.62** Mean (TaskType).
 Scored with `mteb` 2.27.18, fp32, max length 512, through the official MTEB loader at model revision `ff263c85`.
 Officially on MTEB: both the model entry and the results are merged into MTEB.
@@ -102,6 +113,16 @@ Officially on MTEB: both the model entry and the results are merged into MTEB.
 | Summarization (1) | 27.29 |
 
 **Training data and zero-shot.** Fine-tuning used the **training splits** of some MTEB tasks (never their test splits), and some training text comes from the same source corpora as some MTEB tasks. We declare all of them in the model's MTEB entry: 26 of 41 tasks, so MTEB lists the model as **36% zero-shot**. The final checkpoint was selected using MTEB scores. Treat the benchmark mean as optimistic for domains the model has not seen, and evaluate on your own data.
+
+### Active-parameter comparison
+
+In a **23 November 2026** comparison of **50 scored open-weight text-embedding models with at most 40M active parameters (excluding embeddings)**, HobbyLM-Embed-140M ranks **8 by MTEB(eng, v2) Mean (Task)**, at **62.33**. This is an active-parameter comparison; HobbyLM-Embed has **140M total parameters**.
+
+The cohort includes models with at most 600M total parameters, known total and non-embedding active counts, and complete results across all 41 English v2 tasks. Ranking uses the published MTEB result revisions with the registered revision preferred. The result is official; the model card reports **36% zero-shot** for HobbyLM-Embed.
+
+<p><img src="assets/embed-active40-rank-2026-11-23.png" width="100%" alt="MTEB English v2 comparison for models with at most 40M non-embedding active parameters. HobbyLM-Embed, 140M total and 36M active, ranks 8 of 50 scored models at 62.33. The seven higher-scoring models are shown with their total parameter counts."></p>
+
+[All 50 models, exact parameter counts and public sources](assets/embed-active40-rank-2026-11-23.csv).
 
 ## Long documents (up to 2,048 tokens)
 
@@ -386,6 +407,17 @@ The tests run offline: they check the model code against the released hashes, th
 
 ## Architecture
 
+<picture>
+  <source media="(max-width: 640px)" srcset="https://raw.githubusercontent.com/fuellabs-ai/hobbylm-embed-140m/main/assets/embed-architecture-mobile.png">
+  <img src="assets/embed-architecture.png" width="100%" alt="Text is tokenized, encoded with bidirectional attention and sparse expert computation, mean pooled and normalized into a 512-dimensional vector.">
+</picture>
+
+<picture>
+  <source media="(max-width: 640px)" srcset="https://raw.githubusercontent.com/fuellabs-ai/hobbylm-embed-140m/main/assets/embed-routing-mobile.png">
+  <img src="assets/embed-routing.png" width="100%" alt="A router selects eight of 32 experts for each contextual token state and combines their weighted outputs. The paths are illustrative. 140M total parameters; 36M active per token excluding embeddings.">
+</picture>
+
+
 The architecture was designed by Harish Santhanalakshmi Ganesan for the HobbyLM model family ([arXiv:2610.34582](https://arxiv.org/abs/2610.34582)); HobbyLM-Embed adapts it to a bidirectional encoder.
 
 | | |
@@ -400,14 +432,19 @@ The architecture was designed by Harish Santhanalakshmi Ganesan for the HobbyLM 
 
 ## Training
 
-Four stages, each starting from the previous one's weights. Data sources are described by type; mixtures, preparation details and training code are not released.
+<picture>
+  <source media="(max-width: 640px)" srcset="https://raw.githubusercontent.com/fuellabs-ai/hobbylm-embed-140m/main/assets/embed-training-mobile.png">
+  <img src="assets/embed-training.png" width="100%" alt="Three stages: masked-token pretraining, contrastive pair training and supervised fine-tuning. Stage widths do not represent duration or data volume.">
+</picture>
+
+
+Three stages, each starting from the previous one's weights. Data sources are described by type; mixtures, preparation details and training code are not released.
 
 | Stage | What it teaches | Data |
 |---|---|---|
 | 1. Masked-token pretraining | Language, from random weights (50B tokens, sequences up to 1,024) | Filtered web text, educational and scientific documents, Wikipedia, StackExchange, synthetic question–answer text and code; deduplicated and decontaminated against the MTEB(eng, v2) test sets |
 | 2. Contrastive pair training | What "related" means (about 20M pairs) | Public question–answer, title–body, paraphrase and citation pairs |
-| 3. Distillation | Similarity judgements of larger embedding models | Public texts scored by teacher embedding models |
-| 4. Supervised fine-tuning | Task skills, with teacher-mined hard negatives | Public labelled data for retrieval, NLI, paraphrase, classification and clustering, including MTEB training splits; synthetic training triplets |
+| 3. Supervised fine-tuning | Task skills, with teacher-mined hard negatives | Public labelled data for retrieval, NLI, paraphrase, classification and clustering, including MTEB training splits; synthetic training triplets |
 
 What mattered most:
 - **Measuring correctly.** Scoring in fp32 and averaging clustering over several seeds removed noise that was larger than the effects we were testing.
