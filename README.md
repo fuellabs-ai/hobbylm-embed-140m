@@ -118,13 +118,11 @@ Officially on MTEB: both the model entry and the results are merged into MTEB.
 
 ### Active-parameter comparison
 
-In a **23 November 2026** comparison of **50 scored open-weight text-embedding models with at most 40M active parameters (excluding embeddings)**, HobbyLM-Embed-140M ranks **8 by MTEB(eng, v2) Mean (Task)**, at **62.33**. This is an active-parameter comparison; HobbyLM-Embed has **140M total parameters**.
+Among models with ≤40M active parameters on MTEB(eng, v2) (active parameters exclude embeddings), HobbyLM-Embed-140M scores **62.33** Mean (Task). This is an active-parameter comparison; HobbyLM-Embed has **140M total parameters**.
 
-The cohort includes models with at most 600M total parameters, known total and non-embedding active counts, and complete results across all 41 English v2 tasks. Ranking uses the published MTEB result revisions with the registered revision preferred. Officially on MTEB; the model card reports **36% zero-shot** for HobbyLM-Embed.
+The cohort includes models with at most 600M total parameters, known total and non-embedding active counts, and complete results across all 41 English v2 tasks. Scores use the published MTEB result revisions with the registered revision preferred. Officially on MTEB; the model card reports **36% zero-shot** for HobbyLM-Embed.
 
-<p><img src="assets/embed-active40-rank-2026-11-23.png" width="100%" alt="MTEB English v2 comparison for models with at most 40M non-embedding active parameters. HobbyLM-Embed, 140M total and 36M active, ranks 8 of 50 scored models at 62.33. The seven higher-scoring models are shown with their total parameter counts."></p>
-
-[All 50 models, exact parameter counts and public sources](assets/embed-active40-rank-2026-11-23.csv).
+[Models compared, exact parameter counts and public sources](assets/embed-active40-rank-2026-11-23.csv).
 
 ## Long documents (up to 2,048 tokens)
 
