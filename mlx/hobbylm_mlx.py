@@ -1,3 +1,5 @@
+# Copyright 2026 the HobbyLM-Embed authors (Hariharan M. S., Prabhurajhan R.)
+# SPDX-License-Identifier: Apache-2.0
 """HobbyLM-Embed (harims95/hobbylm-embed-140m) in MLX.
 
 Mirrors ref/modeling_hobbylm.py: 12 pre-norm blocks, bidirectional GQA (8 q heads, 2 kv heads, head dim 64) with
