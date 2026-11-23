@@ -190,9 +190,12 @@ Ollama's pooling includes the final end-of-text token, so its vectors are close 
 
 ## Integrations
 
-Tested on CPU (22 Nov 2026, Python 3.12, torch 2.15.0, transformers 5.24.0, sentence-transformers 6.3.0): each gives
-the same vectors as Sentence Transformers (cosine 1.0 on 2 prompted queries and 2 prompted passages). As everywhere,
-queries need `query: ` and documents need `passage: `. For long documents (up to 2,048 tokens), each has one setting, shown under its snippet and tested the same way (512-d, norm 1.0, identical to Sentence Transformers with `max_seq_length = 2048` on a text longer than 2,048 tokens). The snippets use these texts:
+Every snippet below was run exactly as written on CPU, each in a new virtual environment with an empty Hugging Face
+cache, with the model pinned to revision `ea708cee107818fa0c1871eebd26d82a1e3fb1aa`. langchain-hobbylm, LlamaIndex and
+Chroma give the same vectors as Sentence Transformers (cosine 1.000000 on 2 prompted queries and 2 prompted passages,
+and on a 5,098-token passage at 2,048 tokens); langchain-huggingface does for single-line text (see its note). As
+everywhere, queries need `query: ` and documents need `passage: `. The LlamaIndex and Chroma snippets use these texts
+(the LangChain snippets define them inline):
 
 ```python
 QUERIES = ["how do vaccines work?", "what is the capital of france"]
@@ -200,23 +203,90 @@ PASSAGES = ["Vaccines train the immune system to recognise a pathogen without ca
             "Paris is the capital and largest city of France."]
 ```
 
-**LangChain** (tested: langchain-huggingface 1.2.3, langchain-core 1.8.4)
+#### LangChain
+
+**Recommended: [langchain-hobbylm](https://pypi.org/project/langchain-hobbylm/) 0.1.1.** It sets the `query` / `passage`
+prompts and pins the model revision for you. Tested 23 Nov 2026 (Linux, Python 3.12.16, new venv, empty Hugging Face
+cache): langchain-hobbylm 0.1.1, langchain-core 1.8.4, sentence-transformers 6.3.0, transformers 5.24.0, torch 2.15.0, huggingface-hub 2.4.0, numpy 2.5.5.
+
+```bash
+pip install langchain-hobbylm
+```
+
+```python
+from langchain_core.vectorstores import InMemoryVectorStore
+from langchain_hobbylm import HobbyLMEmbeddings
+
+embeddings = HobbyLMEmbeddings(revision="ea708cee107818fa0c1871eebd26d82a1e3fb1aa")
+
+queries = ["how do vaccines work?", "what is the capital of france"]
+passages = ["Vaccines train the immune system to recognise a pathogen without causing the disease.",
+            "Paris is the capital and largest city of France."]
+
+q = [embeddings.embed_query(t) for t in queries]   # "query: " prompt
+p = embeddings.embed_documents(passages)           # "passage: " prompt
+print("dims", len(q[0]), "norms", [round(sum(x * x for x in v) ** 0.5, 4) for v in q + p])
+
+store = InMemoryVectorStore.from_texts(passages, embedding=embeddings)
+for t in queries:
+    print(t, "->", store.similarity_search(t, k=1)[0].page_content)
+```
+
+Output (real run):
+
+```
+dims 512 norms [1.0, 1.0, 1.0, 1.0]
+how do vaccines work? -> Vaccines train the immune system to recognise a pathogen without causing the disease.
+what is the capital of france -> Paris is the capital and largest city of France.
+```
+
+The vectors are identical to Sentence Transformers (cosine 1.000000 on both queries and both passages), with no
+"new version ... malicious code" warning. Long documents: `HobbyLMEmbeddings(revision="ea708cee107818fa0c1871eebd26d82a1e3fb1aa", model_kwargs={"tokenizer_kwargs": {"model_max_length": 2048}})`
+(tested on a 5,098-token passage: 512-d, norm 1.0, cosine 1.000000 vs Sentence Transformers with `max_seq_length = 2048`).
+
+**Alternative: langchain-huggingface.** Tested the same way: langchain-huggingface 1.2.3, langchain-core 1.8.4, sentence-transformers 6.3.0, transformers 5.24.0, torch 2.15.0, huggingface-hub 1.33.0, numpy 2.5.5.
 
 ```bash
 pip install langchain-huggingface sentence-transformers
 ```
 
 ```python
+from langchain_core.vectorstores import InMemoryVectorStore
 from langchain_huggingface import HuggingFaceEmbeddings
-emb = HuggingFaceEmbeddings(model_name="harims95/hobbylm-embed-140m",
-                            model_kwargs={"trust_remote_code": True, "device": "cpu"},
-                            query_encode_kwargs={"prompt_name": "query"},
-                            encode_kwargs={"prompt_name": "passage"})
-q = [emb.embed_query(t) for t in QUERIES]
-p = emb.embed_documents(PASSAGES)
+
+embeddings = HuggingFaceEmbeddings(
+    model_name="harims95/hobbylm-embed-140m",
+    model_kwargs={"trust_remote_code": True, "revision": "ea708cee107818fa0c1871eebd26d82a1e3fb1aa"},
+    query_encode_kwargs={"prompt_name": "query"},
+    encode_kwargs={"prompt_name": "passage"},
+)
+
+queries = ["how do vaccines work?", "what is the capital of france"]
+passages = ["Vaccines train the immune system to recognise a pathogen without causing the disease.",
+            "Paris is the capital and largest city of France."]
+
+q = [embeddings.embed_query(t) for t in queries]
+p = embeddings.embed_documents(passages)
+print("dims", len(q[0]), "norms", [round(sum(x * x for x in v) ** 0.5, 4) for v in q + p])
+
+store = InMemoryVectorStore.from_texts(passages, embedding=embeddings)
+for t in queries:
+    print(t, "->", store.similarity_search(t, k=1)[0].page_content)
 ```
 
-Long documents: add `"tokenizer_kwargs": {"model_max_length": 2048}` to `model_kwargs`.
+Output (real run):
+
+```
+dims 512 norms [1.0, 1.0, 1.0, 1.0]
+how do vaccines work? -> Vaccines train the immune system to recognise a pathogen without causing the disease.
+what is the capital of france -> Paris is the capital and largest city of France.
+```
+
+> langchain-huggingface replaces line breaks with spaces before encoding, so multi-line documents get slightly different vectors than Sentence Transformers (cosine about 0.97 on our long test). Use langchain-hobbylm for identical vectors.
+
+Long documents: add `"tokenizer_kwargs": {"model_max_length": 2048}` to `model_kwargs` (the setting takes effect: on
+the text it actually encodes, with line breaks replaced, the vector is identical to Sentence Transformers at 2,048
+tokens).
 
 #### LlamaIndex
 
@@ -297,7 +367,6 @@ in a new process, not after a 512 one.
 
 `device="cpu"` can be dropped on a CPU-only machine or changed to `"cuda"`.
 
-<!-- TODO: langchain-hobbylm (Prabhu's package): add after it is tested -->
 
 ## Tests
 
