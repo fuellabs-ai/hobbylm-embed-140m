@@ -1,0 +1,51 @@
+mlx 0.32.4, default device Device(gpu, 0)
+
+== 1. token ids (MLX-side tokenizer vs reference)
+  q_short     ref_tokens=5    mlx_tokens=5    identical=True
+  q_capital   ref_tokens=10   mlx_tokens=10   identical=True
+  q_password  ref_tokens=13   mlx_tokens=13   identical=True
+  p_paris     ref_tokens=14   mlx_tokens=14   identical=True
+  p_reset     ref_tokens=37   mlx_tokens=37   identical=True
+  p_long      ref_tokens=512  mlx_tokens=512  identical=True
+  ALL IDS IDENTICAL
+
+== 2. hidden states, float32 (max abs diff / cosine vs PyTorch)
+  after embedding                  worst max|diff|=0.000e+00  worst cosine=1.00000000
+  after layer 1 (block 0, dense)   worst max|diff|=4.649e-06  worst cosine=1.00000000
+  block1                           worst max|diff|=2.594e-04  worst cosine=1.00000000
+  block2                           worst max|diff|=2.747e-04  worst cosine=1.00000000
+  block3                           worst max|diff|=2.747e-04  worst cosine=1.00000000
+  block4                           worst max|diff|=2.747e-04  worst cosine=1.00000000
+  block5                           worst max|diff|=2.747e-04  worst cosine=1.00000000
+  block6                           worst max|diff|=2.747e-04  worst cosine=1.00000000
+  block7                           worst max|diff|=2.747e-04  worst cosine=1.00000000
+  block8                           worst max|diff|=2.747e-04  worst cosine=1.00000000
+  block9                           worst max|diff|=2.747e-04  worst cosine=1.00000000
+  block10                          worst max|diff|=2.747e-04  worst cosine=1.00000000
+  block11                          worst max|diff|=2.747e-04  worst cosine=1.00000000
+  final_norm                       worst max|diff|=5.531e-05  worst cosine=1.00000000
+
+== 3. final vectors, float32 (padded batch per prompt group)
+  sentence    prompt   tokens  dim       norm   cosine vs ST
+  q_short     query         5  512   1.000000     1.00000000
+  q_capital   query        10  512   1.000000     1.00000000
+  q_password  query        13  512   1.000000     1.00000000
+  p_paris     passage      14  512   1.000000     1.00000000
+  p_reset     passage      37  512   1.000000     1.00000000
+  p_long      passage     512  512   1.000000     1.00000000
+  min cosine = 1.00000000
+
+== 3. final vectors, float16 (padded batch per prompt group)
+  sentence    prompt   tokens  dim       norm   cosine vs ST
+  q_short     query         5  512   1.000000     0.99999873
+  q_capital   query        10  512   1.000000     0.99965156
+  q_password  query        13  512   1.000000     0.99999917
+  p_paris     passage      14  512   1.000000     0.99999909
+  p_reset     passage      37  512   1.000000     0.99994890
+  p_long      passage     512  512   1.000000     0.99992588
+  min cosine = 0.99965156
+
+== summary
+  ids identical: True
+  float32 min cosine: 1.00000000  target >= 0.999: PASS
+  float16 min cosine: 0.99965156  (reported separately)

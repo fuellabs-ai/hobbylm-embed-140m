@@ -1,0 +1,6 @@
+# Only for checking the port against the PyTorch / Sentence Transformers reference
+-r requirements.txt
+torch==2.15.0
+sentence-transformers==6.3.0
+transformers==5.24.0
+safetensors
