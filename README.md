@@ -15,6 +15,7 @@ This repository holds the inference code: the model code, examples, the GGUF con
 | Code and examples (this repo) | [github.com/fuellabs-ai/hobbylm-embed-140m](https://github.com/fuellabs-ai/hobbylm-embed-140m) |
 | GGUF (llama.cpp) | [harims95/hobbylm-embed-140m-gguf](https://huggingface.co/harims95/hobbylm-embed-140m-gguf) |
 | MLX (Apple Silicon, float16) | [harims95/hobbylm-embed-140m-mlx](https://huggingface.co/harims95/hobbylm-embed-140m-mlx) |
+| Demo (Hugging Face Space) | [harims95/hobbylm-embed-140m-demo](https://huggingface.co/spaces/harims95/hobbylm-embed-140m-demo) |
 | MTEB | [model entry](https://github.com/embeddings-benchmark/mteb/pull/5967) · [results](https://github.com/embeddings-benchmark/results/pull/858) (both merged) |
 <!-- 7 pm: add | Paper | [Zenodo DOI](https://doi.org/<real DOI>) | here -->
 | Licence | Apache-2.0 (gguf/ scripts: MIT, see [NOTICE](NOTICE)) |
