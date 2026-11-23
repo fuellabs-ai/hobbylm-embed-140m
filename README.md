@@ -218,7 +218,11 @@ p = emb.embed_documents(PASSAGES)
 
 Long documents: add `"tokenizer_kwargs": {"model_max_length": 2048}` to `model_kwargs`.
 
-**LlamaIndex** (tested: llama-index-embeddings-huggingface 0.9.0, llama-index-core 0.14.26)
+#### LlamaIndex
+
+Tested 23 Nov 2026 in a new venv with an empty Hugging Face cache: llama-index-embeddings-huggingface 0.9.0,
+llama-index-core 0.14.26, sentence-transformers 6.3.0, transformers 5.24.0, torch 2.15.0, huggingface_hub 2.4.0, numpy 2.5.5, Python 3.12, CPU. LlamaIndex sets its own prompts, so the model's prompts go in `query_instruction`
+(queries) and `text_instruction` (documents). The revision is pinned, so no "new version ... malicious code" warning appears.
 
 ```bash
 pip install llama-index-embeddings-huggingface
@@ -226,16 +230,36 @@ pip install llama-index-embeddings-huggingface
 
 ```python
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
-embed = HuggingFaceEmbedding(model_name="harims95/hobbylm-embed-140m", trust_remote_code=True,
-                             query_instruction="query: ", text_instruction="passage: ", device="cpu")
+embed = HuggingFaceEmbedding(model_name="harims95/hobbylm-embed-140m",
+                             revision="ea708cee107818fa0c1871eebd26d82a1e3fb1aa",
+                             trust_remote_code=True, device="cpu",
+                             query_instruction="query: ", text_instruction="passage: ")
 q = [embed.get_query_embedding(t) for t in QUERIES]
 p = embed.get_text_embedding_batch(PASSAGES)
+
+print("dims", len(q[0]), "norms", [round(sum(x * x for x in v) ** 0.5, 4) for v in q + p])
+for t, v in zip(QUERIES, q):
+    scores = [sum(a * b for a, b in zip(v, d)) for d in p]
+    print(t, "->", PASSAGES[scores.index(max(scores))])
 ```
 
-Long documents: pass `max_length=2048` to `HuggingFaceEmbedding`.
+Output (real run):
 
-**Chroma** (tested: chromadb 1.5.9). Chroma's embedding function has no query/document distinction, so add the
-prefixes to the texts.
+```
+dims 512 norms [1.0, 1.0, 1.0, 1.0]
+how do vaccines work? -> Vaccines train the immune system to recognise a pathogen without causing the disease.
+what is the capital of france -> Paris is the capital and largest city of France.
+```
+
+The vectors are identical to Sentence Transformers (cosine 1.000000 on both queries and both passages).
+Long documents: add `max_length=2048` to `HuggingFaceEmbedding(...)` (tested the same way on a 5,098-token passage:
+512-d, norm 1.0, cosine 1.000000 vs Sentence Transformers with `max_seq_length = 2048`).
+
+#### Chroma
+
+Tested 23 Nov 2026 in a new venv with an empty Hugging Face cache: chromadb 1.5.9, sentence-transformers 6.3.0, transformers 5.24.0, torch 2.15.0, huggingface_hub 2.4.0, numpy 2.5.5, Python 3.12, CPU. Chroma's embedding
+function has no query/document setting, so the prompts are added to the texts: `query: ` for queries and `passage: `
+for documents. The revision is pinned, so no "new version ... malicious code" warning appears.
 
 ```bash
 pip install chromadb sentence-transformers
@@ -244,17 +268,32 @@ pip install chromadb sentence-transformers
 ```python
 import chromadb
 from chromadb.utils.embedding_functions import SentenceTransformerEmbeddingFunction
-ef = SentenceTransformerEmbeddingFunction(model_name="harims95/hobbylm-embed-140m", device="cpu", trust_remote_code=True)
+ef = SentenceTransformerEmbeddingFunction(model_name="harims95/hobbylm-embed-140m",
+                                          revision="ea708cee107818fa0c1871eebd26d82a1e3fb1aa",
+                                          trust_remote_code=True, device="cpu")
 q = ef(["query: " + t for t in QUERIES])
 p = ef(["passage: " + t for t in PASSAGES])
+print("dims", len(q[0]), "norms", [round(float((v * v).sum()) ** 0.5, 4) for v in q + p])
 
 # end to end: in-memory collection, cosine space
 col = chromadb.Client().create_collection("demo", embedding_function=ef, metadata={"hnsw:space": "cosine"})
 col.add(ids=["vaccines", "paris"], documents=["passage: " + t for t in PASSAGES])
 res = col.query(query_texts=["query: " + t for t in QUERIES], n_results=1)
+print("top result per query:", res["ids"])
 ```
 
-Long documents: pass `tokenizer_kwargs={"model_max_length": 2048}` to `SentenceTransformerEmbeddingFunction`.
+Output (real run):
+
+```
+dims 512 norms [1.0, 1.0, 1.0, 1.0]
+top result per query: [['vaccines'], ['paris']]
+```
+
+The vectors are identical to Sentence Transformers (cosine 1.000000 on both queries and both passages).
+Long documents: add `tokenizer_kwargs={"model_max_length": 2048}` to `SentenceTransformerEmbeddingFunction(...)` (tested
+the same way on a 5,098-token passage: 512-d, norm 1.0, cosine 1.000000 vs Sentence Transformers with
+`max_seq_length = 2048`). Chroma keeps one loaded model per `model_name` in a Python process, so create the 2,048 version
+in a new process, not after a 512 one.
 
 `device="cpu"` can be dropped on a CPU-only machine or changed to `"cuda"`.
 
