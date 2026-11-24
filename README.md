@@ -121,20 +121,20 @@ Officially on MTEB: both the model entry and the results are merged into MTEB ([
 
 Among the 51 models on the MTEB(eng, v2) leaderboard with under 40M active parameters and results on all 41 tasks, HobbyLM-Embed-140M has the 8th-highest average score (Mean (Task)): 62.33.
 
-| # | Model | Mean (Task) | Leaderboard rank | Total params | Active params |
-|---:|---|---:|---:|---:|---:|
-| 1 | avsolatorio/GIST-small-Embedding-v0 | 64.76 | 72 | 33.4M | 21.6M |
-| 2 | codefuse-ai/F2LLM-v2-80M | 64.55 | 97 | 80.1M | 31.6M |
-| 3 | BAAI/bge-small-en-v1.5 | 64.30 | 89 | 33.4M | 21.7M |
-| 4 | abhinand/MedEmbed-small-v0.1 | 63.98 | 92 | 33.4M | 21.6M |
-| 5 | MongoDB/mdbr-leaf-mt | 63.97 | 85 | 22.7M | 11.0M |
-| 6 | RiverRider/motherlode-code-small-en-v0.1 | 63.46 | 99 | 33.4M | 21.6M |
-| 7 | thenlper/gte-small | 63.22 | 96 | 33.4M | 21.6M |
-| 8 | **harims95/hobbylm-embed-140m** | **62.33** | 132 | 140.0M | 36.4M |
-| 9 | hotchpotch/bekko-embedding-v1-a25m | 62.25 | 117 | 123.2M | 24.9M |
-| 10 | ManiacLabs/miniac-embed | 62.08 | 102 | 33.4M | 21.4M |
+| # | Model | Mean (Task) | Total params | Active params |
+|---:|---|---:|---:|---:|
+| 1 | avsolatorio/GIST-small-Embedding-v0 | 64.76 | 33.4M | 21.6M |
+| 2 | codefuse-ai/F2LLM-v2-80M | 64.55 | 80.1M | 31.6M |
+| 3 | BAAI/bge-small-en-v1.5 | 64.30 | 33.4M | 21.7M |
+| 4 | abhinand/MedEmbed-small-v0.1 | 63.98 | 33.4M | 21.6M |
+| 5 | MongoDB/mdbr-leaf-mt | 63.97 | 22.7M | 11.0M |
+| 6 | RiverRider/motherlode-code-small-en-v0.1 | 63.46 | 33.4M | 21.6M |
+| 7 | thenlper/gte-small | 63.22 | 33.4M | 21.6M |
+| 8 | **harims95/hobbylm-embed-140m** | **62.33** | 140.0M | 36.4M |
+| 9 | hotchpotch/bekko-embedding-v1-a25m | 62.25 | 123.2M | 24.9M |
+| 10 | ManiacLabs/miniac-embed | 62.08 | 33.4M | 21.4M |
 
-Method: live MTEB(eng, v2) leaderboard, 24 November 2026; active parameters as MTEB counts them (the registered `n_active_parameters_override` if set, else total minus embedding parameters); ordered by Mean (Task) over the 41 tasks, with the leaderboard's official (Borda) rank shown alongside. HobbyLM-Embed has 140M total parameters and is listed at 36% zero-shot. Full list: [CSV](assets/under40m-active-mteb-eng-v2-2026-11-24.csv).
+Method: live MTEB(eng, v2) leaderboard, 24 November 2026; active parameters as MTEB counts them (the registered `n_active_parameters_override` if set, else total minus embedding parameters); ordered by Mean (Task) over the 41 tasks. HobbyLM-Embed has 140M total parameters and is listed at 36% zero-shot. Full list: [CSV](assets/under40m-active-mteb-eng-v2-2026-11-24.csv).
 
 ## Long documents (up to 2,048 tokens)
 
